@@ -1,0 +1,168 @@
+
+<h2 class="sr-only">Visor interactivo de 5 carruseles para redes sociales del I Diplomado Latinoamericano de Dermatología, Endocrinología y Nutrición F&G Educational Society</h2>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=DM+Sans:wght@400;600;700;800&display=swap');
+  #cvroot{font-family:'DM Sans',system-ui,sans-serif;padding:16px 0;}
+  .cv-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .cv-tab{padding:5px 12px;border-radius:50px;border:1.5px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-weight:700;font-size:11px;cursor:pointer;transition:all .2s;font-family:'DM Sans',system-ui,sans-serif;}
+  .cv-tab.active{background:#E6B84D;border-color:#E6B84D;color:#0A1628;}
+  .cv-frame{width:300px;height:375px;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.07);margin:0 auto;}
+  .cv-slide{width:100%;height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden;box-sizing:border-box;}
+  .cv-dots{display:flex;gap:5px;align-items:center;justify-content:center;margin-top:12px;}
+  .cv-dot{width:6px;height:6px;border-radius:50px;background:rgba(255,255,255,0.22);cursor:pointer;transition:all .3s;border:none;}
+  .cv-dot.active{width:20px;background:#E6B84D;}
+  .cv-nav{display:flex;align-items:center;justify-content:space-between;margin-top:10px;width:300px;margin-left:auto;margin-right:auto;}
+  .cv-btn{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;font-size:15px;font-weight:700;transition:all .2s;font-family:'DM Sans',system-ui;}
+  .cv-btn.prev{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
+  .cv-btn.next{background:#E6B84D;color:#0A1628;}
+  .cv-btn:disabled{opacity:0.2;cursor:default;}
+  .cv-info{text-align:center;font-size:11px;color:rgba(255,255,255,0.3);margin-top:8px;}
+  .cv-ring1,.cv-ring2,.cv-ring3{position:absolute;border-radius:50%;pointer-events:none;}
+  .navy-bg{background:linear-gradient(148deg,#06101C 0%,#152035 55%,#0E1B2D 100%);}
+  .blue-bg{background:linear-gradient(148deg,rgba(30,77,140,0.5) 0%,#0A1628 100%);}
+  .dark-bg{background:linear-gradient(148deg,#0D1B2A,#0A1628);}
+  .serif{font-family:'Playfair Display',Georgia,serif;}
+</style>
+
+<div id="cvroot">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <div style="width:3px;height:16px;background:#E6B84D;border-radius:2px;"></div>
+    <span style="font-size:9px;font-weight:700;color:#E6B84D;letter-spacing:2.5px;text-transform:uppercase;">F&G Educational Society</span>
+  </div>
+  <p style="font-size:12px;color:rgba(255,255,255,0.45);margin:0 0 14px;">5 carruseles · Selecciona uno para previsualizar</p>
+  <div class="cv-tabs" id="tabs"></div>
+  <div class="cv-frame" id="frame"></div>
+  <div class="cv-dots" id="dots"></div>
+  <div class="cv-nav">
+    <button class="cv-btn prev" id="prevBtn" onclick="nav(-1)">←</button>
+    <span style="font-size:11px;color:rgba(255,255,255,0.35);" id="slideInfo"></span>
+    <button class="cv-btn next" id="nextBtn" onclick="nav(1)">→</button>
+  </div>
+  <div class="cv-info" id="carInfo"></div>
+</div>
+
+<script>
+const C={navy:"#0A1628",navyD:"#06101C",blue:"#1E4D8C",blueL:"#3A7BD5",gold:"#E6B84D",goldL:"#F0C94A",derm:"#4A9EBF",endo:"#E8B84D",nutri:"#4CAF82",red:"#E05555",text:"rgba(255,255,255,0.88)",soft:"rgba(255,255,255,0.58)",faint:"rgba(255,255,255,0.32)"};
+
+function rings(color){color=color||C.gold;return`<div style="position:absolute;top:-55px;right:-55px;width:180px;height:180px;border-radius:50%;border:1px solid ${color}44;pointer-events:none;"></div><div style="position:absolute;top:35px;right:35px;width:70px;height:70px;border-radius:50%;border:1px solid ${color}22;pointer-events:none;"></div><div style="position:absolute;bottom:-35px;left:-35px;width:140px;height:140px;border-radius:50%;border:1px solid ${color}18;pointer-events:none;"></div>`;}
+
+function tag(txt,color){color=color||C.gold;return`<div style="display:flex;align-items:center;gap:7px;font-size:8px;font-weight:700;letter-spacing:2.5px;color:${color};text-transform:uppercase;margin-bottom:11px;"><span style="width:14px;height:1px;background:${color};flex-shrink:0;"></span>${txt}</div>`;}
+
+function h(txt,size,italic){size=size||28;return`<h2 class="serif" style="font-size:${size}px;font-weight:900;color:#fff;line-height:1.18;font-style:${italic?"italic":"normal"};margin:0 0 10px;white-space:pre-line;">${txt}</h2>`;}
+
+function p(txt,size,color){size=size||12;color=color||C.soft;return`<p style="font-size:${size}px;color:${color};line-height:1.6;margin:0 0 8px;">${txt}</p>`;}
+
+function cover(s){return`<div class="cv-slide navy-bg" style="padding:22px 22px 26px;justify-content:space-between;">${rings()}<div style="display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;"><span style="font-size:9px;font-weight:700;color:${C.gold};letter-spacing:1px;">F&G Educational Society</span><span style="font-size:9px;color:${C.faint};">${s.ci} / 5</span></div><div style="flex:1;"></div><div style="position:relative;z-index:1;">${tag(s.tag)}${h(s.headline,26)}${s.body?p(s.body,11):""}${s.accent?`<div style="margin-top:14px;font-size:10px;color:${C.gold};font-weight:700;">${s.accent}</div>`:""}</div></div>`;}
+
+function problem(s){return`<div class="cv-slide dark-bg" style="padding:22px;justify-content:center;">${tag(s.tag,"#E05555")}${h(s.headline,20)}<div style="margin:6px 0 10px;">${s.items.map(it=>`<div style="padding:9px 12px;margin-bottom:7px;background:rgba(224,85,85,0.09);border-radius:10px;border-left:3px solid ${C.red};border-radius:0 10px 10px 0;font-size:11px;color:${C.text};line-height:1.5;">${it}</div>`).join("")}</div>${s.body?p(s.body,11,C.gold):""}</div>`;}
+
+function insight(s){return`<div class="cv-slide dark-bg" style="padding:22px;justify-content:center;">${tag(s.tag,C.red)}${h(s.headline,20)}${p(s.body,11)}${s.quote?`<div style="margin-top:12px;padding:12px 14px;border-left:3px solid ${C.gold};background:rgba(230,184,77,0.08);border-radius:0 10px 10px 0;font-family:'Playfair Display',serif;font-size:12px;font-style:italic;color:${C.gold};line-height:1.6;">"${s.quote}"</div>`:""}</div>`;}
+
+function connection(s){return`<div class="cv-slide dark-bg" style="padding:22px;justify-content:center;"><div style="font-size:24px;margin-bottom:12px;">${s.icon}</div>${tag(s.tag)}${h(s.headline,19)}${p(s.body,11)}${s.insight?`<div style="margin-top:10px;padding:10px 12px;border-left:3px solid ${C.blueL};background:rgba(58,123,213,0.12);border-radius:0 10px 10px 0;font-size:11px;font-weight:600;color:${C.text};line-height:1.5;">→ ${s.insight}</div>`:""}</div>`;}
+
+function solution(s){return`<div class="cv-slide blue-bg" style="padding:22px;justify-content:center;position:relative;">${rings()}<div style="position:relative;z-index:1;">${tag(s.tag)}${h(s.headline,20)}${s.body?p(s.body,11):""}${s.stats?`<div style="display:flex;gap:8px;margin-top:14px;">${s.stats.map(st=>`<div style="flex:1;text-align:center;padding:10px 4px;background:rgba(255,255,255,0.05);border-radius:10px;border:1px solid rgba(230,184,77,0.33);"><div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:${C.gold};">${st.num}</div><div style="font-size:8px;color:${C.soft};margin-top:2px;text-transform:uppercase;letter-spacing:1px;">${st.label}</div></div>`).join("")}</div>`:""}</div></div>`;}
+
+function cta(s){return`<div class="cv-slide blue-bg" style="padding:22px;justify-content:space-between;position:relative;">${rings(C.gold)}<div style="position:relative;z-index:1;"><span style="font-size:9px;font-weight:700;color:${C.gold};letter-spacing:1px;">F&G Educational Society</span></div><div style="position:relative;z-index:1;">${h(s.headline,24,true)}</div><div style="position:relative;z-index:1;"><a href="https://diplomadofyg.com" target="_blank" style="display:block;text-align:center;background:linear-gradient(135deg,${C.gold},${C.goldL});color:${C.navy};font-weight:800;font-size:13px;padding:13px 18px;border-radius:50px;text-decoration:none;margin-bottom:12px;">${s.cta}</a><div style="text-align:center;"><div style="font-size:10px;color:${C.soft};margin-bottom:5px;">📅 ${s.date}</div><div style="font-size:9px;font-weight:700;color:${C.gold};background:rgba(230,184,77,0.14);padding:4px 12px;border-radius:50px;display:inline-block;">⚡ ${s.urgency}</div></div></div></div>`;}
+
+function speakers(s){let ac=s.areaColor||C.gold;return`<div class="cv-slide dark-bg" style="padding:20px 20px 16px;"><div style="display:flex;align-items:center;gap:9px;margin-bottom:12px;"><span style="font-size:20px;">${s.area}</span><div><div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${ac};text-transform:uppercase;">${s.tag}</div><div style="font-size:9px;color:${C.faint};">Ponentes destacados</div></div></div><div style="display:flex;flex-direction:column;gap:7px;">${s.speakers.map(sp=>`<div style="padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border-left:3px solid ${ac};border-radius:0 10px 10px 0;"><div style="font-family:'Playfair Display',serif;font-weight:700;font-size:11px;color:#fff;margin-bottom:2px;">${sp.name}</div><div style="font-size:9px;color:${ac};margin-bottom:2px;">${sp.country}</div><div style="font-size:9px;color:${C.soft};line-height:1.5;">${sp.role}</div></div>`).join("")}</div></div>`;}
+
+function world(s){return`<div class="cv-slide blue-bg" style="padding:22px;justify-content:center;position:relative;">${rings()}<div style="position:relative;z-index:1;">${tag(s.tag)}${h(s.headline,20)}<div style="display:flex;flex-wrap:wrap;gap:5px;margin:10px 0;">${s.countries.map(c=>`<span style="font-size:10px;padding:3px 9px;background:rgba(255,255,255,0.07);border-radius:50px;color:${C.text};">${c}</span>`).join("")}</div>${p(s.body,11)}</div></div>`;}
+
+function program(s){return`<div class="cv-slide dark-bg" style="padding:18px 18px 14px;"><div style="display:flex;align-items:center;gap:9px;margin-bottom:11px;"><div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid rgba(255,255,255,0.1);">${s.icon}</div><div style="font-size:8px;font-weight:700;letter-spacing:2px;color:${s.color};text-transform:uppercase;">${s.tag}</div></div><div>${s.modules.map((m,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:${i<s.modules.length-1?"1px solid rgba(255,255,255,0.05)":"none"};"><div style="width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,0.07);color:${s.color};font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;">${i+1}</div><div style="font-size:10px;color:${C.text};line-height:1.5;">${m}</div></div>`).join("")}</div>${s.ponentes?`<div style="margin-top:8px;padding:7px 10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:9px;color:${s.color};">🎓 ${s.ponentes}</div>`:""}</div>`;}
+
+function benefits(s){return`<div class="cv-slide blue-bg" style="padding:22px;"><div style="margin-bottom:4px;">${tag(s.tag)}${h(s.headline,19)}</div><div style="display:flex;flex-direction:column;gap:6px;">${s.items.map(it=>`<div style="display:flex;gap:10px;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:9px;"><span style="font-size:14px;">${it.icon}</span><span style="font-size:10px;color:${C.text};line-height:1.5;">${it.text}</span></div>`).join("")}</div></div>`;}
+
+function revelation(s){return`<div class="cv-slide blue-bg" style="padding:22px;justify-content:center;position:relative;">${rings(C.blueL)}<div style="position:relative;z-index:1;">${tag(s.tag)}${h(s.headline,20)}${s.body?p(s.body,11,C.text):""}${s.items?`<div style="margin-top:8px;">${s.items.map((it,i,a)=>`<div style="padding:7px 0;border-bottom:${i<a.length-1?"1px solid rgba(255,255,255,0.07)":"none"};font-size:11px;color:${C.text};">${it}</div>`).join("")}</div>`:""}</div></div>`;}
+
+function comparison(s){return`<div class="cv-slide dark-bg" style="padding:18px 18px 14px;">${tag(s.tag,C.red)}<div style="display:flex;gap:8px;flex:1;"><div style="flex:1;padding:11px;border-radius:10px;background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.22);"><div style="font-size:8px;font-weight:700;color:${C.red};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✗ ${s.left.label}</div>${s.left.items.map((it,i,a)=>`<div style="font-size:10px;color:rgba(255,255,255,0.55);line-height:1.5;padding:4px 0;border-bottom:${i<a.length-1?"1px solid rgba(255,255,255,0.05)":"none"};">${it}</div>`).join("")}</div><div style="flex:1;padding:11px;border-radius:10px;background:rgba(230,184,77,0.09);border:1px solid rgba(230,184,77,0.44);"><div style="font-size:8px;font-weight:700;color:${C.gold};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✓ ${s.right.label}</div>${s.right.items.map((it,i,a)=>`<div style="font-size:10px;color:${C.text};line-height:1.5;padding:4px 0;border-bottom:${i<a.length-1?"1px solid rgba(255,255,255,0.05)":"none"};">${it}</div>`).join("")}</div></div></div>`;}
+
+function price(s){return`<div class="cv-slide dark-bg" style="padding:22px;justify-content:center;">${tag(s.tag)}${h(s.headline,18)}<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">${s.options.map(op=>`<div style="padding:10px 12px;border-radius:10px;background:${op.highlight?`rgba(230,184,77,0.12)`:"rgba(255,255,255,0.04)"};border:${op.highlight?`1.5px solid rgba(230,184,77,0.55)`:"1px solid rgba(255,255,255,0.1)"};display:flex;justify-content:space-between;align-items:center;"><div><div style="font-size:11px;color:${op.highlight?C.gold:C.text};font-weight:600;margin-bottom:2px;">${op.label}</div><div style="font-size:9px;color:${C.faint};">${op.note}</div></div><div style="font-family:'Playfair Display',serif;font-weight:900;font-size:14px;color:${op.highlight?C.gold:"#fff"};">${op.price}</div></div>`).join("")}</div></div>`;}
+
+function logistics(s){return`<div class="cv-slide dark-bg" style="padding:22px;">${tag(s.tag)}${h(s.headline,19)}<div style="flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:6px;">${s.items.map((it,i,a)=>`<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:${i<a.length-1?"1px solid rgba(255,255,255,0.06)":"none"};"><span style="font-size:16px;width:24px;text-align:center;">${it.icon}</span><span style="font-size:11px;color:${C.text};line-height:1.4;">${it.text}</span></div>`).join("")}</div></div>`;}
+
+function urgency(s){return`<div class="cv-slide" style="background:linear-gradient(148deg,#130A0A,${C.navy});padding:22px;justify-content:center;position:relative;"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(230,184,77,0.07) 0%,transparent 70%);pointer-events:none;"></div><div style="position:relative;z-index:1;">${tag(s.tag,C.red)}${h(s.headline,22)}${s.body?p(s.body,11):""}${s.urgency?`<div style="margin:14px 0;padding:10px 12px;background:rgba(230,184,77,0.16);border-radius:10px;border:1.5px solid rgba(230,184,77,0.5);font-size:11px;font-weight:700;color:${C.gold};text-align:center;">${s.urgency}</div>`:""}${s.sub?p(s.sub,10,C.soft):""}</div></div>`;}
+
+function renderSlide(s){
+  if(s.type==="cover")return cover(s);
+  if(s.type==="problem")return problem(s);
+  if(s.type==="insight")return insight(s);
+  if(s.type==="connection")return connection(s);
+  if(s.type==="solution")return solution(s);
+  if(s.type==="cta")return cta(s);
+  if(s.type==="speakers")return speakers(s);
+  if(s.type==="world")return world(s);
+  if(s.type==="program")return program(s);
+  if(s.type==="benefits")return benefits(s);
+  if(s.type==="revelation")return revelation(s);
+  if(s.type==="comparison")return comparison(s);
+  if(s.type==="price")return price(s);
+  if(s.type==="logistics")return logistics(s);
+  if(s.type==="urgency")return urgency(s);
+  return "";
+}
+
+const CAROUSELS=[
+  {id:1,emoji:"🩺",label:"El Caso Clínico",slides:[
+    {type:"cover",tag:"Para el veterinario clínico",headline:"¿Tu paciente llega\ncon 3 síntomas\ny tú ves solo 1?",body:"Esto no es falta de experiencia. Es falta de perspectiva sistémica.",accent:"Desliza → hay algo que nadie te ha enseñado",ci:1},
+    {type:"problem",tag:"El escenario que todos hemos vivido",headline:"Tres síntomas.\nUn mismo paciente.\nUna frustración.",items:["🔴 Prurito crónico que no responde al antiparasitario","🔴 Ganancia de peso progresiva sin causa aparente","🔴 Poliuria que aparece de la nada"],body:"¿Tratas cada uno por separado? Ese es el problema."},
+    {type:"insight",tag:"El error más común en consulta",headline:"Tratamos cada síntoma\npor separado.\nEl paciente sigue igual.",body:"Antihistamínico para la piel. Dieta para el peso. Análisis para la sed. Tres tratamientos. Un paciente que no mejora.",quote:"El error no estaba en el diagnóstico. Estaba en la perspectiva."},
+    {type:"connection",tag:"La tríada clínica dependiente",icon:"🔗",headline:"La piel, las hormonas\ny la nutrición operan\nbajo un solo eje.",body:"El hipotiroidismo cambia la piel antes de cambiar el peso. No es coincidencia: es fisiología.",insight:"Cuando entiendes el eje, los casos difíciles se vuelven lógicos."},
+    {type:"solution",tag:"La solución existe",headline:"El único diplomado\nque enseña las\n3 áreas integradas.",body:"I Diplomado Latinoamericano en Dermatología, Endocrinología y Nutrición Clínica.",stats:[{num:"23",label:"módulos"},{num:"72+",label:"clases"},{num:"20",label:"expertos"}]},
+    {type:"cta",headline:"Tu siguiente paciente\nmerece que entiendas\ntodo el cuadro.",cta:"Conoce el diplomado →",date:"Inicio: 27 julio 2026 · 100% Online",urgency:"Precio especial hasta el 15 de junio"}
+  ]},
+  {id:2,emoji:"🌍",label:"Los Ponentes",slides:[
+    {type:"cover",tag:"Faculty internacional",headline:"Aprende de quienes\nescriben los libros\nde texto.",body:"20 especialistas de 8 países. Autores, presidentes de sociedades y profesores universitarios.",accent:"Desliza → conoce a tus futuros maestros",ci:2},
+    {type:"speakers",tag:"Dermatología",area:"🔬",areaColor:"#4A9EBF",speakers:[{name:"Dr. Pablo Manzuc",country:"🇦🇷 Argentina",role:"Prof. UNLP · Autor de libros · +200 congresos internacionales"},{name:"Dr. Rares Capitan",country:"🇷🇴 Rumania",role:"Expresidente Soc. Rumana Dermatología Vet. · Colegio Europeo"},{name:"Dr. Eliseo Zuriaga",country:"🇪🇸 España",role:"Acreditado AVEPA · Premio GEDA 2024 · Miembro ESVD"}]},
+    {type:"speakers",tag:"Endocrinología",area:"⚗️",areaColor:"#E8B84D",speakers:[{name:"Dr. Álan Pöppl",country:"🇧🇷 Brasil",role:"PhD · Director científico Asoc. Brasileña de Endocrinología Vet."},{name:"Dr. Diego Miceli",country:"🇦🇷 Argentina",role:"PhD UBA · Investigador CONICET · Miembro ESVE Europa"},{name:"Dr. Santiago Teyssandier",country:"🇦🇷 Argentina",role:"Autor «Manual práctico de endocrinología» (Multimédica 2024)"}]},
+    {type:"speakers",tag:"Nutrición",area:"🌿",areaColor:"#4CAF82",speakers:[{name:"Dra. Rocío Rivera",country:"🇲🇽 México",role:"Magíster FMVZ-UNAM · +15 años asesorías · Ponente int. desde 2011"},{name:"Dra. Alejandra Guerrero",country:"🇲🇽 México",role:"2x Magíster · Fundadora AG Nutrición Clínica · Equipo Royal Canin"},{name:"Dra. Karina Cosío",country:"🇲🇽 México",role:"PhD FMVZ-UNAM · Investigadora microbiota · Coautora manuales CEAMVET"}]},
+    {type:"world",tag:"8 países · 20 expertos",headline:"El mejor faculty\nveterinario de\nLatinoamérica.\nEn un solo lugar.",countries:["🇪🇸 España","🇷🇴 Rumania","🇧🇷 Brasil","🇦🇷 Argentina","🇨🇱 Chile","🇲🇽 México","🇵🇪 Perú","🇨🇴 Colombia","🇺🇸 EE.UU."],body:"Autores de publicaciones científicas internacionales, directores de sociedades y profesores con décadas de práctica real."},
+    {type:"cta",headline:"¿De quién aprendes\nimporta tanto\ncomo qué aprendes.",cta:"Ver el programa completo →",date:"27 julio – 18 octubre 2026 · 100% Online",urgency:"Solo 100 cupos mínimos para apertura"}
+  ]},
+  {id:3,emoji:"🔬",label:"La Tríada",slides:[
+    {type:"cover",tag:"Enfoque clínico integrado",headline:"La piel es el\nespejo del\nmetabolismo.",body:"Y si solo miras la piel, estás viendo solo el reflejo. Lo que hay detrás te está esperando.",accent:"Desliza → entiende el porqué",ci:3},
+    {type:"connection",tag:"Derm → Endo",icon:"🧬",headline:"El hipotiroidismo\ncambia la piel antes\nde cambiar el peso.",body:"El pelaje opaco y la alopecia bilateral no son diagnósticos dermatológicos. Son señales de alarma endocrina tratadas como dermatitis.",insight:"Si no entiendes la hormona, no entiendes la piel."},
+    {type:"connection",tag:"Endo → Nutri",icon:"⚡",headline:"La obesidad desregula\nel eje glucosa-insulina.\nLa dieta no es opcional.",body:"La diabetes no se maneja solo con insulina. El plan nutricional es parte del tratamiento, no el complemento.",insight:"El alimento es la primera medicina. Siempre."},
+    {type:"connection",tag:"Nutri → Derm",icon:"🌿",headline:"El déficit de zinc\nproduce lesiones que\nconfunden al más\nexperimentado.",body:"Dermatosis sensible al zinc, déficit de ácidos grasos, hipovitaminosis A: cuadros que simulan alergias sin contexto nutricional.",insight:"La nutrición habla en el lenguaje de la piel."},
+    {type:"revelation",tag:"La transformación clínica",headline:"Cuando entiendes\nla tríada, los casos\ndifíciles se vuelven\nlógicos.",body:"No es magia. Es formación sistémica.",items:["✓ Sabes cuándo la piel habla de hormonas","✓ Sabes cuándo las hormonas hablan de nutrición","✓ Sabes cuándo la nutrición causa el cuadro dérmico","✓ Tratas el origen, no el síntoma"]},
+    {type:"cta",headline:"Aprende a ver\nlo que otros\naún no pueden ver.",cta:"Descubre el diplomado →",date:"27 julio – 18 octubre 2026 · 100% Online",urgency:"Precio especial solo hasta el 15 de junio"}
+  ]},
+  {id:4,emoji:"📚",label:"El Programa",slides:[
+    {type:"cover",tag:"I Diplomado Latinoamericano",headline:"14 semanas.\n23 módulos.\nUna transformación\nclínica real.",body:"El programa más completo de Latinoamérica en Dermatología, Endocrinología y Nutrición Clínica en perros y gatos.",accent:"Desliza → conoce lo que aprenderás",ci:4},
+    {type:"program",tag:"Bloque I · Dermatología",color:"#4A9EBF",icon:"🔬",modules:["Diagnóstico dermatológico integral y semiología","Enfermedades alérgicas e inmunomedidas","Dermatología parasitaria y micótica avanzada","Dermatología hormonal: la conexión endo-derm","Oncología cutánea: diagnóstico clínico","Terapéutica dermatológica de vanguardia"],ponentes:"Ponentes de España, Rumania, Argentina, Chile y Colombia"},
+    {type:"program",tag:"Bloque II · Endocrinología",color:"#E8B84D",icon:"⚗️",modules:["Diabetes mellitus canina y felina: manejo clínico","Hipotiroidismo e hipertiroidismo felino","Hiperadrenocorticismo (Cushing): diagnóstico y tto.","Hipoadrenocorticismo (Addison): presentación y crisis","Endocrinología reproductiva en hembra y macho","Complicaciones metabólicas y emergencias endocrinas"],ponentes:"Ponentes de Brasil, Argentina, Chile y EE.UU."},
+    {type:"program",tag:"Bloque III · Nutrición",color:"#4CAF82",icon:"🌿",modules:["Evaluación nutricional clínica en consulta diaria","Obesidad: manejo del peso con evidencia científica","Nutrición en enfermedades crónicas (ERC, hepatopatía)","Dietas caseras vs. comerciales: verdades y mitos","Microbiota intestinal, probióticos y prebióticos","Nutrición aplicada en dermatología y endocrinología"],ponentes:"Ponentes de México, Chile, Colombia y Argentina"},
+    {type:"benefits",tag:"Todo lo que incluye tu inscripción",headline:"No solo son clases.\nEs un ecosistema\nde aprendizaje.",items:[{icon:"🎓",text:"72+ clases con 20 expertos internacionales"},{icon:"📹",text:"8 meses de acceso a todas las grabaciones"},{icon:"📋",text:"Material de estudio y casos clínicos descargables"},{icon:"🌐",text:"Resolución guiada de casos clínicos reales"},{icon:"🏆",text:"Certificado con aval internacional"},{icon:"💬",text:"Foro de discusión clínica con los ponentes"}]},
+    {type:"cta",headline:"23 módulos.\nEl conocimiento que\ncambia tu práctica\ndesde el día 1.",cta:"Conoce el programa completo →",date:"Inicio: 27 julio 2026 · 100% Online",urgency:"Inscríbete antes del 15 de junio"}
+  ]},
+  {id:5,emoji:"⏰",label:"La Decisión",slides:[
+    {type:"cover",tag:"El momento de decidir",headline:"Los veterinarios\nque se forman hoy\nson los referentes\nde mañana.",body:"La pregunta no es si necesitas esta formación. Es cuánto tiempo más puedes esperar sin ella.",accent:"Desliza → toma la decisión con información",ci:5},
+    {type:"comparison",tag:"El costo real de no actuar",left:{label:"Sin el diplomado",items:["Casos complejos sin resolución","Derivaciones evitables","Clientes que buscan otro especialista","Años aprendiendo por ensayo y error"]},right:{label:"Con el diplomado",items:["Diagnósticos integrales con confianza","Tu consulta se vuelve referencia","Clientes que vuelven y te recomiendan","14 semanas = años de experiencia condensada"]}},
+    {type:"price",tag:"Tu inversión",headline:"Una inversión que\nse paga con el primer\ncaso que resuelves\nde forma diferente.",options:[{label:"Colombia · Profesional",price:"$750K COP",note:"Precio especial hasta el 15 de junio ⚡",highlight:true},{label:"Colombia · Estudiante",price:"$500K COP",note:"Con carnet estudiantil vigente",highlight:false},{label:"Internacional (USD)",price:"Consultar",note:"PayPal · Zelle · Western Union",highlight:false}]},
+    {type:"logistics",tag:"¿Cómo funciona?",headline:"100% online.\nA tu ritmo.\nSin excusas.",items:[{icon:"📅",text:"27 julio – 18 octubre 2026 (14 semanas)"},{icon:"💻",text:"Clases en vivo + grabaciones siempre disponibles"},{icon:"⏱",text:"8 meses de acceso posterior a todas las grabaciones"},{icon:"🌎",text:"Disponible desde cualquier país de Latinoamérica"},{icon:"🗣",text:"Traducción en tiempo real para clases en otro idioma"},{icon:"🏆",text:"Certificado con aval internacional al finalizar"}]},
+    {type:"urgency",tag:"Actúa ahora",headline:"El diplomado abre\ncon mínimo 100\ninscritos.\n¿Ya aseguraste\ntu cupo?",body:"Cada día que esperas es un cupo que alguien más está asegurando ahora.",urgency:"⚡ Precio especial termina el 15 de junio de 2026",sub:"No dejes que tu formación dependa de la decisión que podrías tomar mañana."},
+    {type:"cta",headline:"El conocimiento\nno espera.\nTampoco tus\npacientes.",cta:"Asegura tu cupo ahora →",date:"Inicio: 27 julio 2026 · 100% Online",urgency:"Precio especial solo hasta el 15 de junio"}
+  ]}
+];
+
+let ci=0,si=0;
+
+function render(){
+  const car=CAROUSELS[ci];
+  const slide=car.slides[si];
+  document.getElementById("frame").innerHTML=renderSlide(slide);
+  const dots=document.getElementById("dots");
+  dots.innerHTML=car.slides.map((_,i)=>`<div class="cv-dot${i===si?" active":""}" onclick="goTo(${i})"></div>`).join("");
+  document.getElementById("prevBtn").disabled=si===0;
+  document.getElementById("nextBtn").disabled=si===car.slides.length-1;
+  document.getElementById("slideInfo").textContent=`${si+1} / ${car.slides.length}`;
+  document.getElementById("carInfo").textContent=`Carrusel ${ci+1}: ${car.label}`;
+  const tabs=document.getElementById("tabs");
+  tabs.innerHTML=CAROUSELS.map((c,i)=>`<button class="cv-tab${i===ci?" active":""}" onclick="selectCar(${i})">${c.emoji} ${c.label}</button>`).join("");
+}
+
+function goTo(n){if(n>=0&&n<CAROUSELS[ci].slides.length){si=n;render();}}
+function nav(d){goTo(si+d);}
+function selectCar(n){ci=n;si=0;render();}
+
+render();
+</script>
